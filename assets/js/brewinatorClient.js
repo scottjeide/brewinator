@@ -5,18 +5,20 @@
 $(document).ready(function() {
 
   var viewModel = function() {
-    var self = this;
+    var me = this;
 
-    self.logCount =  1;
-    self.brewLogs = ko.observableArray();
-    self.recipes = ko.observableArray();
-    self.recipeCount = ko.computed(function() {
-      return self.recipes().length;
+    me.logCount =  1;
+    me.brewLogs = ko.observableArray();
+    me.recipes = ko.observableArray();
+    me.recipeCount = ko.computed(function() {
+      return me.recipes().length;
     });
+    me.currentTemp = ko.observable(0);
+    
     
     io.socket.get('/recipe', {}, function(data, jwr) {
       if (jwr.statusCode == 200) {
-        self.recipes(data);
+        me.recipes(data);
       }
       else {
         
@@ -26,18 +28,35 @@ $(document).ready(function() {
 
     io.socket.on('recipe', function(msg) {
       if (msg.verb == 'created') {
-        self.recipes.push(msg.data);
+        me.recipes.push(msg.data);
       }
       
     });
 
+    // todo: can I use the knockout mapping stuff to directly map the server side models to observable properties
+    // rather than manually setting each observable property on each response?
+    io.socket.get('/brewinator', {id:1}, function(data, jwr) {
+      if (jwr.statusCode == 200) {
+        me.currentTemp(data.currentTemp);
+      }
+    });
+    
+    io.socket.on('brewinator', function(msg) {
+      if (msg.verb = 'updated') {
+        me.currentTemp(msg.data.currentTemp);
+      }
+    });
+    
+    me.run = function() {
+      io.socket.put('/brewinator/start', {}, function(data, jwr) {
+        console.log('response: ' + jwr.statusCode);
+      });
+    }
+    
   };
   
 
-  //http://stackoverflow.com/questions/27971706/example-of-socket-io-chat-sails-js
+
   ko.applyBindings(new viewModel());
-  
-  
-  
   
 });

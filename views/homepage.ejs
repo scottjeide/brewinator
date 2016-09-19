@@ -1,17 +1,18 @@
 <!-- Default home page -->
 <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600' rel='stylesheet' type='text/css'>
 <style>
-    
-    
+
 </style>
 
 <div class="default-page">
   <div class="header">
-    <h1 id="main-title" class="container"><%= __('A brand new app.') %></h1>
-    <h3 class="container">You're looking at: <code><%= view.pathFromApp + '.' +view.ext %></code></h3>
+    <h1 id="main-title" class="container">Brewinator</h1>
+    <h3 class="container"></h3>
   </div>
   <div class="main container clearfix">
-      <%= __('You have') %> <span data-bind="text: logCount"></span> <%= __(' brew logs.') %>
-      There are <span data-bind="text: recipeCount"></span> recipes
+      <p><%= __('You have') %> <span data-bind="text: logCount"></span> <%= __(' brew logs.') %></p>
+      <p>There are <span data-bind="text: recipeCount"></span> recipes</p>
+      <p>Current Temp: <span data-bind="text: currentTemp"></span></p>
+      <button data-bind="click: run">Run</button>
   </div>
 </div>
