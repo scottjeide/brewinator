@@ -75,35 +75,135 @@ module.exports = {
         // to use sails.io from the server side, see this:
         //https://github.com/balderdashy/sails.io.js#for-nodejs
 
-
         // set up the socket connection back to ourselves 
         var socketIOClient = require('socket.io-client');
         var sailsIOClient = require('sails.io.js');
         var io = sailsIOClient(socketIOClient);
         io.sails.url = 'http://localhost:1337';
 
+        var maxWattage = 4500;
 
-        // todo: clean this stuff up & remove the read-only checks in the controller (or make them work so they
-        // only allow internal requests. 
+        var PidController = require('node-pid-controller');
+
+        var pidController = new PidController({
+          k_p: 0.25,
+          k_i: 0.01,
+          k_d: 0.01,
+          // first try just letting it run dt: 1, // in seconds
+          i_max: 10   // the max value returned for the adjustment value. Don't understand what/how this relates to anything
+        });
 
 
-        // cheesy little update temp function to test things out
+        pidController.setTarget(149);
+
+
+        var brewPotSimulator = new function() {
+          
+          var lastTimeMs = Date.now();
+          var currentWattage = 0;
+          var currentTemp = 130;
+          var ambientTemp = 70;
+          var totalGallons = 6;
+          
+          
+          function _getTemp() {
+            
+            var currentTimeMs = Date.now();
+            var elapsedTimeMs = currentTimeMs - lastTimeMs;
+            lastTimeMs = currentTimeMs;
+
+            if (currentWattage > 0) {
+              /*
+               element is on, so we're raising the temp
+               Formulas for heat rise/temp/wattage relationship
+               
+               Gallons * Temp Rise (F)
+               ------------------------------------ * 1000 = Wattage
+               372 * heat up time (hours)
+
+               (Gallons * Temp) / (372 * hours) = (Wattage / 1000)
+               (Gallons * Temp) = (Wattage / 1000) * (372 * hours)
+               Temp = ((Wattage / 1000) * (372 * hours)) / Gallons
+               */
+              var elapsedHours = elapsedTimeMs / (60*60*1000);
+              var tempIncrease = ((currentWattage / 1000) * (372 * elapsedHours)) / totalGallons;
+              sails.log('update temp, element on, tempIncrease = ' + tempIncrease);
+              currentTemp += tempIncrease;
+              sails.log('update temp, element on, currentTemp = ' + currentTemp);
+            }
+            else {
+              /*
+               element is off so we're lowering the temp (total approximation here since the element will 
+               technically still be hot if it was just turned off, but oh well)
+
+               for temp loss when the element is off - approximation using newtons law of cooling
+               The k value is variable based on the volume of water, surface area, 
+               insulation, etc. But for simulation just using a value here that sort of seems to simulate heat loss
+               in a brew pot. Could measure it from the brew setup if 
+               you want - I don't right now at least...
+
+               T(t)= T_a + (T_o-T_a) e^{-kt} 
+               where
+               T_a = ambient/room temp
+               T_o = original temp
+               k = constant dependent on the brew/pot (.054)
+               t = time (in minutes)
+               */
+              var elapsedMinutes = elapsedTimeMs / (60*1000);
+              currentTemp = ambientTemp + ((currentTemp - ambientTemp) * Math.exp((-0.00101362) * elapsedMinutes));
+              sails.log('update temp, element off, currentTemp = ' + currentTemp);
+            }
+            
+            return currentTemp;
+          }
+          
+          function _setPower(wattage) {
+            currentWattage = wattage;
+          }
+          
+          return {
+            getTemp: _getTemp,
+            setPower: _setPower
+          }
+        };
+        
+        brewPotSimulator.setPower(maxWattage);
+
         setInterval(function() {
-          _statusRecord.currentTemp++;
+          
+          var currentTemp = brewPotSimulator.getTemp();
+          var adjustment = pidController.update(currentTemp);
+          sails.log('pid adjustment value = ' + adjustment);
+          if (adjustment > 0) {
+            brewPotSimulator.setPower(maxWattage);
+          }
+          else {
+            brewPotSimulator.setPower(0);
+          }
+
+          // couple of things I've noticed with this. If you break in the debugger during this interval, it
+          // takes a long time before it runs again. And with node, there's no guarantee that it'll
+          // happen exactly in 1 second anyway. Likely just node, but maybe it doesn't happen if not going
+          // back through the socket io client & going direct to db instead?
+
+          _statusRecord.currentTemp = Math.round(currentTemp);
 
           io.socket.put('/brewinator/1', _statusRecord, function(resData, jwr) {
-            console.log('put brew status: ' + jwr.statusCode);
+            //sails.log('put brew status: ' + jwr.statusCode);
           });
 
+          
+          /*
           io.socket.get('/brewinator', {id:1}, function(data, jwr) {
             if (jwr.statusCode == 200) {
               console.log('got temp to ' + data.currentTemp);
             }
           });
+          */
 
           // would normally want to disconnect our socket when done, but we're never really done with it
           //io.socket.disconnect();
-        }, 2000);
+        }, 1000);
 
       }
 
