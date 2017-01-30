@@ -17,7 +17,8 @@ class App extends Component {
 
     // start out with some defaults if we can't reach the server
     let currentState = {
-      currentTemp: -1
+      currentTemp: -1,
+      running: false
     };
     if (this.props.controller.length) {
       currentState = this.props.controller[0];

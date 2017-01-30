@@ -20,7 +20,7 @@ if (Meteor.isServer) {
         console.log('creating default controller state');
 
         this.dbCollection.insert({
-          brewing: false,
+          running: false,
           currentTemp: 0,
           heatOn: false
         });
@@ -47,12 +47,8 @@ if (Meteor.isServer) {
 
       if (this.dbRecord.currentTemp != temp) {
         console.log('setting temp to ' + temp);
-
-        this.dbCollection.update(this.dbRecord._id, {
-          currentTemp: temp
-        });
-
-        this._load();
+        this.dbRecord.currentTemp = temp;
+        this._save();
       }
     }
 
@@ -60,9 +56,24 @@ if (Meteor.isServer) {
       return this.dbRecord.currentTemp;
     }
 
+    setRunning(running) {
+      if (this.dbRecord.running != running) {
+        console.log('setting running to ' + running)
+        this.dbRecord.running = running;
+        this._save();
+      }
+    }
+
     _load() {
       console.log('loading controller state');
       this.dbRecord = this.dbCollection.findOne();
+    }
+
+    _save() {
+      console.log('updating controller state');
+      this.dbCollection.update(this.dbRecord._id, this.dbRecord);
+
+      this._load();
     }
   }
 
@@ -77,6 +88,7 @@ if (Meteor.isServer) {
     'controller.start'() {
       let BrewController = require('../server/brewController.js');
       BrewController.brewController.run();
+      ControllerInstance.setRunning(true);
 
     },
 

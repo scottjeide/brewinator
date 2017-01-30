@@ -11,6 +11,19 @@
     "node-pid-controller": "^1.0.0",
     "react": "^15.4.1",
     "react-addons-pure-render-mixin": "^15.4.1",
-    "react-dom": "^15.4.1"
+    "react-dom": "^15.4.1",
+    "semantic-ui-react": "^0.64.4"
+  },
+  "devDependencies": {
+    "autoprefixer": "^6.3.1"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {
+        "browsers": [
+          "last 2 versions"
+        ]
+      }
+    }
   }
 }
