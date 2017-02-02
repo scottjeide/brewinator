@@ -28,7 +28,7 @@ class App extends Component {
       <div className="container">
         <header>
 
-          <h1>My app</h1>
+          <h1>Brewinator</h1>
           <ControllerUI controller={currentState}/>
         </header>
       </div>

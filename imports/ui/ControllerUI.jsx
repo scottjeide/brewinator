@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {Button} from 'semantic-ui-react';
+import {Icon} from 'semantic-ui-react';
 import {Meteor} from 'meteor/meteor';
 
 export default class ControllerUI extends Component {
@@ -25,12 +26,15 @@ export default class ControllerUI extends Component {
       running ? ControllerUI.handleTurnOff() : ControllerUI.handleTurnOn();
     };
 
+    const flameIcon = this.props.controller.heatOn ? (<Icon size="big" color="red" name="fire"/>) : (<Icon disabled size="big" name="fire"/>);
+
     return (
       <div>
         <Button toggle active={running} onClick={onOffHandler}>
           {onOffText}
         </Button>
         <span className="text">Temp: {this.props.controller.currentTemp}</span>
+        {flameIcon}
       </div>
     );
 

@@ -28,6 +28,7 @@ class BrewController {
   stop() {
     if (this.pidTimer != null) {
       Meteor.clearInterval(this.pidTimer);
+      ControllerInstance.setHeatOn(false);
     }
 
     this.pidTimer = null;
@@ -45,7 +46,7 @@ class BrewController {
       return;
     }
 
-    this.pidController.setTarget(149);
+    this.pidController.setTarget(135);
 
     let brewPotSimulator = this.brewPotSimulator || new BrewSimulator();
     this.brewPotSimulator = brewPotSimulator;
@@ -60,9 +61,11 @@ class BrewController {
       console.log('pid adjustment value = ' + adjustment);
       if (adjustment > 0) {
         brewPotSimulator.setPower(this.maxWattage);
+        ControllerInstance.setHeatOn(true);
       }
       else {
         brewPotSimulator.setPower(0);
+        ControllerInstance.setHeatOn(false);
       }
 
       ControllerInstance.setTemp(Math.round(currentTemp));
@@ -79,7 +82,7 @@ class BrewSimulator {
     this.lastTimeMs = Date.now();
     this.currentWattage = 0;
     this.currentTemp = 130;
-    this.ambientTemp = 70;
+    this.ambientTemp = 40;
     this.totalGallons = 6;
   }
 
@@ -128,7 +131,7 @@ class BrewSimulator {
        t = time (in minutes)
        */
       let elapsedMinutes = elapsedTimeMs / (60 * 1000);
-      this.currentTemp = this.ambientTemp + ((this.currentTemp - this.ambientTemp) * Math.exp((-0.00101362) * elapsedMinutes));
+      this.currentTemp = this.ambientTemp + ((this.currentTemp - this.ambientTemp) * Math.exp((-0.054) * elapsedMinutes));
       console.log('update temp, element off, currentTemp = ' + this.currentTemp);
     }
 

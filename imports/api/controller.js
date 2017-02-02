@@ -65,8 +65,16 @@ if (Meteor.isServer) {
 
     setRunning(running) {
       if (this.dbRecord.running != running) {
-        console.log('setting running to ' + running)
+        console.log('setting running to ' + running);
         this.dbRecord.running = running;
+        this._save();
+      }
+    }
+
+    setHeatOn(heatOn) {
+      if (this.dbRecord.heatOn != heatOn) {
+        console.log('setting heaton to ' + heatOn);
+        this.dbRecord.heatOn = heatOn;
         this._save();
       }
     }
