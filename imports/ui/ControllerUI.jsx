@@ -8,24 +8,26 @@ export default class ControllerUI extends Component {
     super(props);
   }
 
-  handleOnOff() {
 
-    if (!this.props.controller.running) {
-      Meteor.call('controller.start');
-    }
-    else {
-      Meteor.call('controller.start');
-    }
+  static handleTurnOff() {
+    Meteor.call('controller.stop');
+  }
+
+  static handleTurnOn() {
+    Meteor.call('controller.start');
   }
 
   render() {
 
-    const active = this.props.controller.running;
-    const onOffText = active ? 'Turn Off' : 'Turn On';
+    const running = this.props.controller.running;
+    const onOffText = running ? 'Turn Off' : 'Turn On';
+    const onOffHandler = ()=> {
+      running ? ControllerUI.handleTurnOff() : ControllerUI.handleTurnOn();
+    };
 
     return (
       <div>
-        <Button toggle active={active} onClick={this.handleOnOff.bind(this)}>
+        <Button toggle active={running} onClick={onOffHandler}>
           {onOffText}
         </Button>
         <span className="text">Temp: {this.props.controller.currentTemp}</span>

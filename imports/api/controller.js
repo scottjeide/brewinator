@@ -11,6 +11,7 @@ import {Meteor} from 'meteor/meteor';
 export const ControllerState = new Mongo.Collection('controllerState');
 
 if (Meteor.isServer) {
+  let BrewController = require('../server/brewController.js');
 
   class Controller {
     constructor() {
@@ -24,9 +25,15 @@ if (Meteor.isServer) {
           currentTemp: 0,
           heatOn: false
         });
-
-        this._load();
       }
+      else {
+        this.dbRecord.currentTemp = 0;
+        this.dbRecord.running = false;
+        this.dbRecord.heatOn = false;
+        this._save();
+      }
+
+      this._load();
     }
 
     /**
@@ -86,14 +93,13 @@ if (Meteor.isServer) {
 
   Meteor.methods({
     'controller.start'() {
-      let BrewController = require('../server/brewController.js');
       BrewController.brewController.run();
       ControllerInstance.setRunning(true);
-
     },
 
     'controller.stop'() {
-
+      BrewController.brewController.stop();
+      ControllerInstance.setRunning(false);
     },
 
   });

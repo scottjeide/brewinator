@@ -8,6 +8,7 @@ class BrewController {
 
   constructor() {
     this.maxWattage = 4500;
+    this.pidTimer = null;
 
     let PidController = require('node-pid-controller');
     this.pidController = new PidController({
@@ -24,6 +25,13 @@ class BrewController {
     this._runSimulator();
   }
 
+  stop() {
+    if (this.pidTimer != null) {
+      Meteor.clearInterval(this.pidTimer);
+    }
+
+    this.pidTimer = null;
+  }
 
   /**
    * Runs controller against a simulated brew pot
@@ -32,13 +40,20 @@ class BrewController {
    */
   _runSimulator() {
 
+    if (this.pidTimer != null) {
+      console.log("brew already running");
+      return;
+    }
+
     this.pidController.setTarget(149);
 
-    let brewPotSimulator = new BrewSimulator();
+    let brewPotSimulator = this.brewPotSimulator || new BrewSimulator();
+    this.brewPotSimulator = brewPotSimulator;
+
     brewPotSimulator.setPower(this.maxWattage);
 
 
-    Meteor.setInterval(() => {
+    this.pidTimer = Meteor.setInterval(() => {
 
       let currentTemp = brewPotSimulator.getTemp();
       let adjustment = this.pidController.update(currentTemp);
