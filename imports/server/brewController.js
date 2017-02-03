@@ -3,12 +3,14 @@
 import {Meteor} from 'meteor/meteor';
 import {ControllerInstance} from '../api/controller.js'
 import {addBrewLogEntry} from '../api/brewlogs.js';
+import {addBrewSession} from '../api/brewsession.js';
 
 class BrewController {
 
   constructor() {
     this.maxWattage = 4500;
     this.pidTimer = null;
+    this.brewSessionId = 0;
 
     let PidController = require('node-pid-controller');
     this.pidController = new PidController({
@@ -22,6 +24,7 @@ class BrewController {
 
 
   run() {
+    this.brewSessionId = addBrewSession();
     this._runSimulator();
   }
 
@@ -57,7 +60,7 @@ class BrewController {
     this.pidTimer = Meteor.setInterval(() => {
 
       let currentTemp = brewPotSimulator.getTemp();
-      addBrewLogEntry(currentTemp);
+      addBrewLogEntry(this.brewSessionId, currentTemp);
       let adjustment = this.pidController.update(currentTemp);
       console.log('pid adjustment value = ' + adjustment);
       if (adjustment > 0) {

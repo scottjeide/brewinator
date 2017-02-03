@@ -18,14 +18,14 @@ if (Meteor.isServer) {
   // set up our counter for log ids
   DbCounter.init(brewLogsCounterName);
 
-  // TODO: eventually change to just publish the current session's brew logs or something
   Meteor.publish('currentLogs', ()=> {
     return BrewLogs.find();
   });
 
 
-  export function addBrewLogEntry(temperature) {
+  export function addBrewLogEntry(sessionId, temperature) {
     BrewLogs.insert( {
+      sessionId: sessionId,
       id: DbCounter.getNextId(brewLogsCounterName),
       time: new Date(),
       temp: temperature
