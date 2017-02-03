@@ -27,6 +27,7 @@ if (Meteor.isServer) {
 
   export function addBrewLogEntry(temperature) {
     BrewLogs.insert( {
+      id: DbCounter.getNextId(brewLogsCounterName),
       time: new Date(),
       temp: temperature
     });

@@ -19,10 +19,10 @@ if (Meteor.isServer) {
     init(name) {
       // set up our counter for log ids
 
-      if (!this.counterDb.findOne({query: {_id: name }})) {
+      if (!this.counterDb.findOne({_id: name })) {
         console.log("setting initial brewlog counter for " + name);
         this.counterDb.insert({
-          _id: "name",
+          _id: name,
           seq: 0
         })
       }
@@ -34,15 +34,12 @@ if (Meteor.isServer) {
      * @param name
      */
     getNextId(name) {
-      let counterRecord = this.counterDb.findAndModify(
-        {
-          query: { _id: name },
-          update: { $inc: { seq: 1 } },
-          new: true
-        }
-      );
 
-      return counterRecord.seq;
+      this.counterDb.upsert(
+        {_id: name},
+        {$inc: {seq: 1}}
+      );
+      return this.counterDb.findOne({_id: name }).seq;
     }
   }
 
