@@ -2,7 +2,6 @@
 import React, {Component, PropTypes} from 'react';
 import {Line} from 'react-chartjs-2';
 
-
 export default class BrewLog extends Component {
 
   constructor(props) {
@@ -15,7 +14,7 @@ export default class BrewLog extends Component {
     let labels = [];
     let dataPoints = [];
     for (let log of this.props.logs) {
-      labels.push(log.time);
+      labels.push(moment(log.time));
       dataPoints.push(log.temp);
     }
 
@@ -33,6 +32,11 @@ export default class BrewLog extends Component {
 
     const chartOptions = {
       events: ["click", "touchstart", "touchmove", "touchend"],
+      scales: {
+        xAxes: [{
+          type: 'time'
+        }]
+      }
     };
 
     return (
