@@ -1,8 +1,8 @@
 'use strict';
 
 import {Meteor} from 'meteor/meteor';
-
 import {ControllerInstance} from '../api/controller.js'
+import {addBrewLogEntry} from '../api/brewlogs.js';
 
 class BrewController {
 
@@ -57,6 +57,7 @@ class BrewController {
     this.pidTimer = Meteor.setInterval(() => {
 
       let currentTemp = brewPotSimulator.getTemp();
+      addBrewLogEntry(currentTemp);
       let adjustment = this.pidController.update(currentTemp);
       console.log('pid adjustment value = ' + adjustment);
       if (adjustment > 0) {

@@ -37,16 +37,6 @@ export default class ControllerUI extends Component {
         {flameIcon}
       </div>
     );
-
-    /*
-     return (
-     <div>
-     <span className="text">Brewing: {this.props.controller.running}</span>
-     <span className="text">Temp: {this.props.controller.currentTemp}</span>
-     <span className="text">On: {this.props.controller.heatOn}</span>
-     </div>
-     )
-     */
   }
 }
 
