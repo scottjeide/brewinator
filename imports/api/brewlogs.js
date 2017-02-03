@@ -18,9 +18,8 @@ if (Meteor.isServer) {
   // set up our counter for log ids
   DbCounter.init(brewLogsCounterName);
 
-  // TODO: eventually change to just publish the current session's brew logs?
+  // TODO: eventually change to just publish the current session's brew logs or something
   Meteor.publish('currentLogs', ()=> {
-
     return BrewLogs.find();
   });
 
