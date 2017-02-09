@@ -10,8 +10,7 @@ import {Meteor} from 'meteor/meteor';
 import {Mongo} from 'meteor/mongo';
 import {addBrewSession} from '../api/brewsession.js';
 
-
-export const ControllerState = new Mongo.Collection('controllerState');
+const ControllerState = new Mongo.Collection('controllerState');
 
 if (Meteor.isServer) {
   let BrewController = require('../server/brewController.js');
@@ -128,4 +127,32 @@ if (Meteor.isServer) {
   });
 
 }
+else {
+  // the client side of the controller
+  export class Controller {
+    constructor() {
+      Meteor.subscribe('controller');
 
+      this.currentTemp = 0;
+      this.running = false;
+      this.heatOn = false;
+      this.brewSessionId = 0;
+
+      this._controllerSelector = ControllerState.find({}, {sort: {createdAt: -1}}).fetch();
+
+      // and get notified of changes to the collection so we can update our object state
+      Tracker.autorun(() => {
+        if (this._controllerSelector.length) {
+          let controller = this._controllerSelector[0];
+          this.currentTemp = controller.currentTemp;
+          this.running = controller.running;
+          this.heatOn = controller.heatOn;
+          this.brewSessionId = controller.brewSessionId;
+        }
+      });
+    }
+
+
+  }
+
+}

@@ -2,7 +2,7 @@ import React, {Component, PropTypes} from 'react';
 import {Meteor} from 'meteor/meteor';
 import {createContainer} from 'meteor/react-meteor-data';
 
-import {ControllerState} from '../api/controller.js';
+import {Controller} from '../api/controller.js';
 import {BrewLogs} from '../api/brewlogs.js';
 import ControllerUI from './ControllerUI.jsx';
 import BrewLog from './BrewLog.jsx';
@@ -16,22 +16,12 @@ class App extends Component {
 
 
   render() {
-
-    // start out with some defaults if we can't reach the server
-    let currentState = {
-      currentTemp: -1,
-      running: false
-    };
-    if (this.props.controller.length) {
-      currentState = this.props.controller[0];
-    }
-
     return (
       <div className="container">
         <header>
 
           <h1>Brewinator</h1>
-          <ControllerUI controller={currentState}/>
+          <ControllerUI controller={this.props.controller}/>
         </header>
         <BrewLog logs={this.props.logs}/>
       </div>
@@ -45,19 +35,16 @@ App.propTypes = {
 };
 
 export default createContainer(() => {
-  Meteor.subscribe('controller');
+
+  let controller = new Controller();
 
   // subscribe to the current set of brewlogs
   Tracker.autorun(function() {
-
-    let controllerState = ControllerState.find({}, {sort: {createdAt: -1}}).fetch();
-    if (controllerState.length) {
-      Meteor.subscribe('brewLogs', controllerState[0].brewSessionId);
-    }
+    Meteor.subscribe('brewLogs', controller.brewSessionId);
   });
 
   return {
-    controller: ControllerState.find({}, {sort: {createdAt: -1}}).fetch(),
+    controller: controller,
     logs: BrewLogs.find({}, {sort: {id: 1}}).fetch()
   };
 }, App);
