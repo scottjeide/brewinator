@@ -46,7 +46,15 @@ App.propTypes = {
 
 export default createContainer(() => {
   Meteor.subscribe('controller');
-  Meteor.subscribe('currentLogs');
+
+  // subscribe to the current set of brewlogs
+  Tracker.autorun(function() {
+
+    let controllerState = ControllerState.find({}, {sort: {createdAt: -1}}).fetch();
+    if (controllerState.length) {
+      Meteor.subscribe('brewLogs', controllerState[0].brewSessionId);
+    }
+  });
 
   return {
     controller: ControllerState.find({}, {sort: {createdAt: -1}}).fetch(),

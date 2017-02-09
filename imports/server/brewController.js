@@ -3,7 +3,6 @@
 import {Meteor} from 'meteor/meteor';
 import {ControllerInstance} from '../api/controller.js'
 import {addBrewLogEntry} from '../api/brewlogs.js';
-import {addBrewSession} from '../api/brewsession.js';
 
 class BrewController {
 
@@ -23,8 +22,8 @@ class BrewController {
   }
 
 
-  run() {
-    this.brewSessionId = addBrewSession();
+  run(brewSessionId) {
+    this.brewSessionId = brewSessionId;
     this._runSimulator();
   }
 

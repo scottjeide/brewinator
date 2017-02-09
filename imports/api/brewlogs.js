@@ -18,8 +18,8 @@ if (Meteor.isServer) {
   // set up our counter for log ids
   DbCounter.init(brewLogsCounterName);
 
-  Meteor.publish('currentLogs', ()=> {
-    return BrewLogs.find();
+  Meteor.publish('brewLogs', (brewSessionId)=> {
+    return BrewLogs.find({sessionId: brewSessionId});
   });
 
 

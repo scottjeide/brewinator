@@ -8,6 +8,8 @@
 
 import {Meteor} from 'meteor/meteor';
 import {Mongo} from 'meteor/mongo';
+import {addBrewSession} from '../api/brewsession.js';
+
 
 export const ControllerState = new Mongo.Collection('controllerState');
 
@@ -24,13 +26,15 @@ if (Meteor.isServer) {
         this.dbCollection.insert({
           running: false,
           currentTemp: 0,
-          heatOn: false
+          heatOn: false,
+          brewSessionId: 0
         });
       }
       else {
         this.dbRecord.currentTemp = 0;
         this.dbRecord.running = false;
         this.dbRecord.heatOn = false;
+        this.dbRecord.brewSessionId = 0;
         this._save();
       }
 
@@ -80,6 +84,14 @@ if (Meteor.isServer) {
       }
     }
 
+    setBrewSession(brewSessionId) {
+      if (this.dbRecord.brewSessionId != brewSessionId) {
+        console.log('setting brewSessionId to ' + brewSessionId);
+        this.dbRecord.brewSessionId = brewSessionId;
+        this._save();
+      }
+    }
+
     _load() {
       console.log('loading controller state');
       this.dbRecord = this.dbCollection.findOne();
@@ -102,7 +114,9 @@ if (Meteor.isServer) {
 
   Meteor.methods({
     'controller.start'() {
-      BrewController.brewController.run();
+      let brewSessionId = addBrewSession();
+      ControllerInstance.setBrewSession(brewSessionId);
+      BrewController.brewController.run(brewSessionId);
       ControllerInstance.setRunning(true);
     },
 
