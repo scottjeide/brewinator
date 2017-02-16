@@ -3,6 +3,7 @@
 import {Meteor} from 'meteor/meteor';
 import {ControllerInstance} from '../api/controller.js'
 import {addBrewLogEntry} from '../api/brewlogs.js';
+import PidController from './pidController.js';
 
 class BrewController {
 
@@ -11,7 +12,6 @@ class BrewController {
     this.pidTimer = null;
     this.brewSessionId = 0;
 
-    let PidController = require('node-pid-controller');
     this.pidController = new PidController({
       k_p: 0.25,
       k_i: 0.01,
